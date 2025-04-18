@@ -1,0 +1,184 @@
+<div class="container my-5">
+  <h1 class="mb-4">Farmer Dashboard</h1>
+  
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+      <div class="list-group">
+        <a href="/farmer/dashboard" class="list-group-item list-group-item-action active">Dashboard</a>
+        <a href="/farmer/products" class="list-group-item list-group-item-action">Products</a>
+        <a href="/farmer/orders" class="list-group-item list-group-item-action">Orders</a>
+        <a href="/farmer/profile" class="list-group-item list-group-item-action">Profile</a>
+      </div>
+
+      <!-- Fluvio Order Updates Feed -->
+      <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Live Order Updates</h5>
+          <span id="connection-status" class="badge bg-secondary">Connecting...</span>
+        </div>
+        <ul id="order-updates-list" class="list-group list-group-flush">
+          <li class="list-group-item text-center text-muted">Waiting for updates...</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                  <h3><%= typeof totalProducts !== 'undefined' ? totalProducts : 0 %></h3>
+                  <p class="mb-0">Total Products</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h3><%= typeof pendingOrders !== 'undefined' ? pendingOrders : 0 %></h3>
+                  <p class="mb-0">Pending Orders</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h3>₹<%= typeof totalRevenue !== 'undefined' ? totalRevenue : 0 %></h3>
+                  <p class="mb-0">Total Revenue</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Orders Table -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Orders</h5>
+        </div>
+        <div class="card-body">
+          <% if (typeof recentOrders !== 'undefined' && recentOrders.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Products</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentOrders.forEach(order => { %>
+                    <tr>
+                      <td><%= order._id.toString().substring(0, 8) %></td>
+                      <td><%= order.customer.name %></td>
+                      <td><%= order.items.length %> items</td>
+                      <td>₹<%= order.totalAmount %></td>
+                      <td>
+                        <span class="badge bg-<%= getStatusBadgeColor(order.status) %>">
+                          <%= order.status %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Update
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li><a class="dropdown-item order-status-update" data-order-id="<%= order._id %>" data-status="processing" href="#">Processing</a></li>
+                            <li><a class="dropdown-item order-status-update" data-order-id="<%= order._id %>" data-status="shipped" href="#">Shipped</a></li>
+                            <li><a class="dropdown-item order-status-update" data-order-id="<%= order._id %>" data-status="delivered" href="#">Delivered</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item order-status-update" data-order-id="<%= order._id %>" data-status="cancelled" href="#">Cancelled</a></li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-center">No recent orders found.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Socket.IO Client Library -->
+<script src="/socket.io/socket.io.js"></script>
+<!-- Order Updates JS -->
+<script src="/js/order-updates.js"></script>
+<!-- Dashboard Functionality -->
+<script>
+  // Helper function to get badge color based on status
+  function getStatusBadgeColor(status) {
+    switch(status) {
+      case 'pending': return 'secondary';
+      case 'processing': return 'primary';
+      case 'shipped': return 'info';
+      case 'delivered': return 'success';
+      case 'cancelled': return 'danger';
+      default: return 'secondary';
+    }
+  }
+  
+  // Set user role and ID in localStorage for order updates subscription
+  document.addEventListener('DOMContentLoaded', () => {
+    // Assuming we have the user data in a global variable or data attribute
+    const userId = '<%= user._id %>';
+    const userRole = 'farmer';
+    
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('userRole', userRole);
+    
+    // Add event listeners for order status updates
+    document.querySelectorAll('.order-status-update').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const orderId = this.getAttribute('data-order-id');
+        const status = this.getAttribute('data-status');
+        
+        updateOrderStatus(orderId, status);
+      });
+    });
+  });
+  
+  // Function to update order status
+  async function updateOrderStatus(orderId, status) {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (response.ok) {
+        // Refresh the page to show updated status
+        location.reload();
+      } else {
+        const data = await response.json();
+        alert(`Failed to update order: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Failed to update order status. Please try again.');
+    }
+  }
+</script> 
