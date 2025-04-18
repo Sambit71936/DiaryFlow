@@ -10,6 +10,7 @@ DiaryFlow connects local dairy farmers directly with customers, ensuring fresh, 
 - **Real-time Updates**: Fluvio + Socket.IO
 - **Technical Partners**: Fluvio, Stellar Tech Partners
 
+
 ## Fluvio Integration
 
 DiaryFlow leverages Fluvio for real-time streaming of order updates between farmers and customers. This integration enables:
@@ -101,13 +102,19 @@ diaryflow/
 ├── server.js             # Entry point
 └── README.md
 ```
+ Future Scope
+📦 Add delivery partner integration (Swiggy/Dunzo APIs)
 
-## Technology Partners
+🌐 Add regional language support
 
-### Fluvio
+🧾 Generate monthly invoices for subscriptions
 
-Fluvio's streaming technology powers our real-time order tracking system, ensuring farmers and customers always have the latest information about order status.
+📊 Farmer analytics dashboard
 
-### Stellar Tech Partners
+💸 Real Stellar integration for real-world payments
 
-Stellar Tech Partners provides infrastructure and development expertise, helping us build a robust and scalable platform. 
+
+Final Words
+This journey was wholesome — like our milk 🥛. We brainstormed for hours, pivoted our UI/UX twice, learned how to stream data live, and even pulled off payments on a blockchain network!
+Huge shout-out to the mentors and organizers of HackHazard 🚀.
+We loved hacking for a purpose ❤️🐄
