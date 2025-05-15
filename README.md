@@ -2,6 +2,18 @@
 
 DiaryFlow connects local dairy farmers directly with customers, ensuring fresh, high-quality dairy products while supporting local agriculture.
 
+## 📌 Real-World Problem
+
+In India and many other countries, **independent dairy farmers** operate on a small scale and often sell their products informally. This leads to several issues:
+
+- 🐄 **No digital presence** — Consumers don’t know local producers exist.
+- 💸 **Middlemen reduce profits** — Farmers don’t get fair prices.
+- 🧾 **No order tracking or payments** — Everything is manual and offline.
+- 🏠 **Customers relocating to new areas** struggle to find fresh, trustworthy dairy suppliers.
+
+There’s a huge gap between **urban dairy demand** and **rural dairy supply**.
+
+
 ## Technology Stack
 
 - **Backend**: Node.js, Express
