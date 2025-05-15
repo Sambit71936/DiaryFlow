@@ -114,7 +114,3 @@ diaryflow/
 💸 Real Stellar integration for real-world payments
 
 
-Final Words
-This journey was wholesome — like our milk 🥛. We brainstormed for hours, pivoted our UI/UX twice, learned how to stream data live, and even pulled off payments on a blockchain network!
-Huge shout-out to the mentors and organizers of HackHazard 🚀.
-We loved hacking for a purpose ❤️🐄
